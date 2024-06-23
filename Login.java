@@ -4,17 +4,14 @@
  */
 package project;
 
-
 import com.sun.jdi.connect.spi.Connection;
 import static java.lang.reflect.Array.set;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import javax.swing.JFrame;
 import java.sql.ResultSet;
 import javax.swing.JOptionPane;
 
-/**
- *
- * @author Aryanto Pratama
- */
 public class Login extends javax.swing.JFrame {
 
     /**
@@ -47,8 +44,8 @@ public class Login extends javax.swing.JFrame {
         jLabel7 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        toSig = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Masuk Akun");
@@ -150,16 +147,15 @@ public class Login extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 20)); // NOI18N
         jLabel5.setText("Tidak Punya Akun?");
 
-        toSig.setFont(new java.awt.Font("Tahoma", 1, 20)); // NOI18N
-        toSig.setText("Daftar");
-        toSig.setBorder(null);
-        toSig.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toSigActionPerformed(evt);
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Project/asset/Logo.png"))); // NOI18N
+
+        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel8.setText("Sign Up");
+        jLabel8.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel8MouseClicked(evt);
             }
         });
-
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Project/asset/Logo.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -170,8 +166,8 @@ public class Login extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(toSig))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel8))
                     .addComponent(jLabel4)
                     .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 387, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 107, Short.MAX_VALUE)
@@ -193,7 +189,7 @@ public class Login extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
-                            .addComponent(toSig))))
+                            .addComponent(jLabel8))))
                 .addContainerGap(29, Short.MAX_VALUE))
         );
 
@@ -214,44 +210,40 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginActionPerformed
-        String username_user,password_user, query, passDB = null;
-        String SUrl, Susername, Snomor_telpon, Salamat, Spassword;
+        String username_user, password_user, query, passDB = null;
+        String SUrl, Susername, Spassword;
         SUrl = "jdbc:MySQL://localhost:3306/java_user_db";
         Susername = "root";
         Spassword = "";
-        int notFound = 0;    
+        int notFound = 0;        
         
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = java.sql.DriverManager.getConnection(SUrl, Susername, Spassword);
             java.sql.Statement st = con.createStatement();
             
-            if("".equals(username.getText())){
+            if ("".equals(username.getText())) {
                 JOptionPane.showMessageDialog(null, "Silahkan Masukkan Username", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
-            }else if("".equals(password.getText())){
+            } else if ("".equals(password.getText())) {
                 JOptionPane.showMessageDialog(null, "Silahkan Masukkan password", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
-            }else{
+            } else {
                 username_user = username.getText();
                 password_user = password.getText();
                 
-                query = "SELECT * FROM user WHERE username= '"+username_user+"'";
+                query = "SELECT * FROM user WHERE username= '" + username_user + "'";
                 ResultSet rs = st.executeQuery(query);
-                while(rs.next()){
+                while (rs.next()) {
                     welcomePage.username_menu.setText(rs.getString(2));
                     passDB = rs.getString("password");
+                    password_user = passwordHash(new String(password.getPassword()));
                     notFound = 1;
-                    
                 }
-                
-                 
-                
-                if(notFound == 1 && password_user.equals(passDB)){
-                      welcomePage wel = new welcomePage();
-                      wel.setVisible(true);
-                      this.dispose();
-                
-                }else{
-                    JOptionPane.showMessageDialog(null, "Username atau password salah", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
+                if (notFound == 1 && password_user.equals(passDB)) {
+                    dispose();
+                    new Menu().setVisible(true);
+                    
+                } else {
+                    JOptionPane.showMessageDialog(null, "Username atau password salah", "Pesan Peringatan", JOptionPane.ERROR_MESSAGE);
                 }
                 password.setText("");
             }
@@ -259,43 +251,56 @@ public class Login extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Akun belum terdaftar", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_loginActionPerformed
-
+    
+    public static String passwordHash(String password){
+        try{
+            MessageDigest md = MessageDigest.getInstance("SHA");
+            md.update(password.getBytes());
+            byte[] rbt = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            
+            for(byte b: rbt){
+                sb.append(String.format("%02x",b));
+            }
+            return sb.toString();
+        }catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     private void lihatPassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lihatPassActionPerformed
         // TODO add your handling code here:
-        if(lihatPass.isSelected()){
-            password.setEchoChar((char)0);
-        
-        }else{
+        if (lihatPass.isSelected()) {
+            password.setEchoChar((char) 0);
+            
+        } else {
             password.setEchoChar('*');
         }
     }//GEN-LAST:event_lihatPassActionPerformed
 
-    private void toSigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toSigActionPerformed
-        // TODO add your handling code here:
-        this.setVisible(false);
-        new SignUp().setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_toSigActionPerformed
-
     private void usernameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_usernameMouseClicked
-
+        
         String SUrl, Susername, Snomor_telpon, Salamat, Spassword;
         SUrl = "jdbc:MySQL://localhost:3306/java_user_db";
         Susername = "root";
-        Spassword = "";   
+        Spassword = "";        
         
-        String sql = "SELECT * FROM user WHERE username= '"+username.getText()+"' and password = '"+password.getText()+"'";
-      
+        String sql = "SELECT * FROM user WHERE username= '" + username.getText() + "' and password = '" + password.getText() + "'";
+        
         try {
             java.sql.Connection con = java.sql.DriverManager.getConnection(SUrl, Susername, Spassword);
             java.sql.Statement st = con.createStatement();
-            ResultSet rs =  st.executeQuery(sql);
-            
-           
+            ResultSet rs = st.executeQuery(sql);
             
         } catch (Exception e) {
         }
     }//GEN-LAST:event_usernameMouseClicked
+
+    private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
+        // TODO add your handling code here:
+        dispose();
+        new SignUp().setVisible(true);
+    }//GEN-LAST:event_jLabel8MouseClicked
 
     /**
      * @param args the command line arguments
@@ -340,12 +345,12 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JCheckBox lihatPass;
     private javax.swing.JButton login;
     private javax.swing.JPasswordField password;
-    private javax.swing.JButton toSig;
     private javax.swing.JTextField username;
     // End of variables declaration//GEN-END:variables
 }

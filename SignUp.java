@@ -10,6 +10,8 @@ import javax.swing.JOptionPane;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import javax.swing.JOptionPane;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  *
@@ -17,17 +19,15 @@ import javax.swing.JOptionPane;
  */
 public class SignUp extends javax.swing.JFrame {
 
-
     /**
      * Creates new form SignUp
      */
-    
     public SignUp() {
         initComponents();
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -40,7 +40,6 @@ public class SignUp extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jLabel12 = new javax.swing.JLabel();
         username = new javax.swing.JTextField();
@@ -54,6 +53,7 @@ public class SignUp extends javax.swing.JFrame {
         nomor = new javax.swing.JTextField();
         lihatPass1 = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Daftar Akun");
@@ -66,15 +66,6 @@ public class SignUp extends javax.swing.JFrame {
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 20)); // NOI18N
         jLabel5.setText("Sudah Punya Akun?");
-
-        jButton2.setFont(new java.awt.Font("Tahoma", 1, 20)); // NOI18N
-        jButton2.setText("Masuk");
-        jButton2.setBorder(null);
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
 
         jPanel3.setBackground(new java.awt.Color(153, 153, 153));
 
@@ -181,6 +172,14 @@ public class SignUp extends javax.swing.JFrame {
 
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Project/asset/Logo.png"))); // NOI18N
 
+        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel8.setText("Login");
+        jLabel8.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel8MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -191,12 +190,12 @@ public class SignUp extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2))
+                        .addComponent(jLabel8))
                     .addComponent(jLabel4)
                     .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 407, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 115, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 79, Short.MAX_VALUE)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29))
+                .addGap(65, 65, 65))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,12 +208,12 @@ public class SignUp extends javax.swing.JFrame {
                         .addComponent(jLabel4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton2)
-                            .addComponent(jLabel5)))
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel8)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(24, 24, 24)
+                        .addGap(28, 28, 28)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(38, Short.MAX_VALUE))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -231,34 +230,42 @@ public class SignUp extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-       public static boolean validasiNomorTelepon(String nomor) {
+    public static boolean validasiNomorTelepon(String nomor) {
         // Menggunakan ekspresi reguler untuk memastikan nomor telepon hanya mengandung angka
         return nomor.matches("[0-9]+");
     }
+    
 
-      
     private void lihatPass1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lihatPass1ActionPerformed
-        // TODO add your handling code here:
-        if(lihatPass1.isSelected()){
-            password1.setEchoChar((char)0);
-
-        }else{
+        if (lihatPass1.isSelected()) {
+            password1.setEchoChar((char) 0);
+        } else {
             password1.setEchoChar('*');
         }
     }//GEN-LAST:event_lihatPass1ActionPerformed
 
     private void daftarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_daftarActionPerformed
-        String username_user, nomor_telpon, alamat, password, query;
-        String SUrl, Susername, Snomor_telpon, Salamat, Spassword;
+        String username_user = username.getText();
+        String nomor_telepon = nomor.getText();
+        String alamat = alam.getText();
+        String password = passwordHash(new String(password1.getPassword()));
+        insertData(username_user, nomor_telepon, alamat, password);
+    }//GEN-LAST:event_daftarActionPerformed
+    
+    
+    public Connection con = null;
+    private void insertData(String username_user, String nomor_telepon, String alamat, String password){
+        String  query, SUrl, Susername, Spassword;
+        
         SUrl = "jdbc:MySQL://localhost:3306/java_user_db";
         Susername = "root";
         Spassword = "";
-
+        
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             java.sql.Connection con = DriverManager.getConnection(SUrl, Susername, Spassword);
             java.sql.Statement st = con.createStatement();
-
+            
             if ("".equals(this.username.getText())) {
                 JOptionPane.showMessageDialog(null, "Silahkan Masukkan Username", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
             } else if ("".equals(nomor.getText())) {
@@ -266,42 +273,55 @@ public class SignUp extends javax.swing.JFrame {
             } else if (!validasiNomorTelepon(nomor.getText())) {
                 JOptionPane.showMessageDialog(null, "Nomor telepon harus berupa angka", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
                 nomor.setText("");
-            }else if (!nomor.getText().startsWith("08") && !nomor.getText().startsWith("62")) {
+            } else if (!nomor.getText().startsWith("08") && !nomor.getText().startsWith("62")) {
                 JOptionPane.showMessageDialog(null, "Nomor telepon harus dimulai dengan '08' / '62'", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
+                nomor.setText("");
+            } else if (nomor.getText().length() < 10) {
+                JOptionPane.showMessageDialog(null, "Nomor telepon harus lebih dari 10 digit!", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
                 nomor.setText("");
             }else if ("".equals(alam.getText())) {
                 JOptionPane.showMessageDialog(null, "Silahkan Masukkan Alamat", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
             } else if ("".equals(this.password1.getText())) {
                 JOptionPane.showMessageDialog(null, "Silahkan Masukkan Password", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
             } else {
-                username_user = username.getText();
-                nomor_telpon = nomor.getText();
-                alamat = alam.getText();
-                password = password1.getText();
                 System.out.println(password);
-
-                query = "INSERT INTO user(username, nomor_telpon, alamat, password)" + "VALUES('" + username_user + "','" + nomor_telpon + "' ,'" + alamat + "' ,'" + password + "')";
+                
+                query = "INSERT INTO user(username, nomor_telpon, alamat, password)" + "VALUES('" + username_user + "','" + nomor_telepon + "' ,'" + alamat + "' ,'" + password + "')";
                 st.execute(query);
                 username.setText("");
                 nomor.setText("");
                 alam.setText("");
                 password1.setText("");
-                JOptionPane.showMessageDialog(null, "Akun Sukses Berhasil dibuat.");
+                JOptionPane.showMessageDialog(null, "Akun Berhasil dibuat.");
+                dispose();
+                new Login().setVisible(true);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Koneksi Gagal!", "Pesan Peringatan", JOptionPane.WARNING_MESSAGE);
         }
-    }//GEN-LAST:event_daftarActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    }
+    
+    public static String passwordHash(String password){
+        try{
+            MessageDigest md = MessageDigest.getInstance("SHA");
+            md.update(password.getBytes());
+            byte[] rbt = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for(byte b: rbt){
+                sb.append(String.format("%02x",b));
+            }
+            return sb.toString();
+        }catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    private void jLabel8MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel8MouseClicked
         // TODO add your handling code here:
-        Login log = new Login();
-        log.setVisible(true);
-        this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+        dispose();
+        new Login().setVisible(true);
+    }//GEN-LAST:event_jLabel8MouseClicked
 
-    
-    
     /**
      * @param args the command line arguments
      */
@@ -340,7 +360,6 @@ public class SignUp extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField alam;
     private javax.swing.JButton daftar;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -349,6 +368,7 @@ public class SignUp extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JCheckBox lihatPass1;
